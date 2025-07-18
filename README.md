@@ -21,7 +21,7 @@ Inspired by [Bambot](https://github.com/timqian/bambot) / [bambot.org](https://b
    git clone -b dev https://github.com/orionplan/MT4-Robotic-Arm-Playground.git
    cd MT4-Robotic-Arm-Playground
     ```
-	2.	Install & serve:
+2.	Install & serve:
     ```bash
     npm install
     npm run dev
