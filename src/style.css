@@ -186,3 +186,44 @@ button:disabled {
 #help-overlay.collapsed #help-content {
   display: none;
 }
+#joint-control-panel {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 30, 30, 0.9);
+  padding: 16px;
+  border-radius: 10px;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+.joint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.control-btn {
+  width: 36px;
+  height: 36px;
+  background: #444;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.control-btn.pressed {
+  background: #888;
+}
+
+.joint-slider {
+  width: 200px;
+}
+
+.angle-display {
+  width: 40px;
+  text-align: center;
+}
