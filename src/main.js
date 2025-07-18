@@ -28,7 +28,8 @@ import URDFLoader from 'urdf-loader';
 import robotConfigs from './robotConfig.js';
 import { setupKeyboardControls, setupControlPanel } from './robotControls.js';
 
-// —— 选择刚才在 robotConfig.js 中定义的那项
+const baseUrl = import.meta.env.BASE_URL;
+
 const robotType = 'mt4';
 const config = robotConfigs[robotType];
 
@@ -36,7 +37,6 @@ let scene, camera, renderer, controls;
 window.robot = null;
 let keyboardUpdate;
 
-// 用于处理需要固定世界旋转的物体的变量
 let fixedRotationObject = null;
 let mimic_link1 = null;
 let mimic_link2 = null;
@@ -175,130 +175,114 @@ hemiLight.intensity = 0.8;
 function loadRobot() {
   const manager = new LoadingManager();
   const loader = new URDFLoader(manager);
-  // URDF 放在 public/URDF/robot.urdf loader.load('/URDF/robot.urdf', robot => {
-
-  loader.load('/URDF/robot.urdf', robot => {
-    
-
+  // Load URDF robot file and attach to scene
+  loader.load(baseUrl + 'URDF/robot.urdf', robot => {
     window.robot = robot;
-    // scene.add(window.robot);
   });
 
   manager.onLoad = () => {
+    // Set up robot in scene and attach STL meshes
     window.robot.traverse(c => c.castShadow = true);
     window.robot.rotation.x = -Math.PI/2;
     window.robot.rotation.z = -Math.PI;
-
-    // 缩放并抬高到地面
     const box = new Box3().setFromObject(window.robot);
     window.robot.scale.set(1, 1, 1);
-    // window.robot.position.y += box.min.y;
     scene.add(window.robot);
 
-    // 加载并附加 STL 模型到 link4
-    // 假设你的模型放在 public/STL/your_model.stl
-    // 路径必须是从 public 目录开始的绝对路径。
-    // 如果文件在 public/meshes/Link4_modified.stl，那么 URL 就是 /meshes/Link4_modified.stl
-
-    loadAndAttachSTL(window.robot, 'base_link', '/URDF/meshes/base_link_modified.stl', {
-        color: 0x888888,
-        pos: [0,0,0],
-        rot: [Math.PI/2,0,0]
-      });
-    loadAndAttachSTL(window.robot, 'link1', '/URDF/meshes/Link1_modified.stl', {
-        color: 0x888888,
-        pos: [0,0,0],
-        rot: [0,0,0]
-      });
-    loadAndAttachSTL(window.robot, 'link2', '/URDF/meshes/Link2_modified.stl', {
-        color: 0xff9900,
-        pos: [0,0,0],
-        rot: [0,0,0]
-      });
-    loadAndAttachSTL(window.robot, 'link3', '/URDF/meshes/Link3_modified.stl', {
-        color: 0xff9900,
-        pos: [-0.15,0,0],
-        rot: [0,0,0]
-      });
-    loadAndAttachSTL(window.robot, 'link4', '/URDF/meshes/Link4_modified.stl', {
-        color: 0xff9900,
-        pos: [0,0,0],
-        rot: [0,0,0],
-        onMeshLoaded: mesh => {
-            fixedRotationObject = {
-            mesh,
-            targetWorldEuler: new Euler(0,0,0,'XYZ'),
-            initialRotation: mesh.rotation.clone()
-          };
-        }
-      });
-
-    loadAndAttachSTL(window.robot, 'link2_mimic', '/URDF/meshes/0001-01 L130_modified.stl', {
-        color: 0xff9900,
-        pos: [0,0.0135,0],
-        rot: [Math.PI/2,0,Math.PI/2],
-        onMeshLoaded: mesh => {
-          mimic_link1 = {
-            mesh,
-            targetWorldEuler: new Euler(0,0,0,'XYZ'),
-            initialRotation: mesh.rotation.clone()
-          };
-        }
-      });
-
-
-    loadAndAttachSTL(window.robot, 'link2', '/URDF/meshes/0400_modified.stl', {
-        color: 0xffdddd,
-        pos: [0,0,-0.007],
-        rot: [0,Math.PI,0],
-        onMeshLoaded: mesh => {
-          mimic_link4 = {
-            mesh,
-            targetWorldEuler: new Euler(0,0,0,'XYZ'),
-            initialRotation: mesh.rotation.clone()
-          };
-        }
-      });
-    loadAndAttachSTL(window.robot, 'link1', '/URDF/meshes/0001-01_modified.stl', {
-        color: 0xffdddd,
-        pos: [0.018,0.094,0.032],
-        rot: [0,0,Math.PI/2],
-        onMeshLoaded: mesh => {
-          mimic_link0001 = {
-            mesh,
-            targetWorldEuler: new Euler(0,0,0,'XYZ'),
-            initialRotation: mesh.rotation.clone()
-          };
-        }
-      });
-    loadAndAttachSTL(window.robot, 'link2', '/URDF/meshes/0500-01_modified.stl', {
-        color: 0xffdddd,
-        pos: [0,0.13,0.015],
-        rot: [0,0,0],
-        onMeshLoaded: mesh => {
-          mimic_link5 = {
-            mesh,
-            targetWorldEuler: new Euler(0,0,0,'XYZ'),
-            initialRotation: mesh.rotation.clone()
-          };
-        }
-      });
-    loadAndAttachSTL(window.robot, 'link2', '/URDF/meshes/0001-01 L150_modified.stl', {
-        color: 0xffdddd,
-        // pos: [-0.15 - Math.sin(40) * 0.032,-0.01,  Math.cos(40) * 0.032],
-        pos: [ - Math.sin(40) * 0.032,-0.01, 0.13+ Math.cos(40) * 0.032],
-        rot: [0, 0, 0],
-        onMeshLoaded: mesh => {
-          
-          mimic_link150 = {
-            mesh,
-            targetWorldEuler: new Euler(0,0,0,'XYZ'),
-            initialRotation: mesh.rotation.clone()
-          };
-        }
-      });
-
-    // 键盘控制
+    // Attach STL meshes to robot links
+    loadAndAttachSTL(window.robot, 'base_link', baseUrl + 'URDF/meshes/base_link_modified.stl', {
+      color: 0x888888,
+      pos: [0,0,0],
+      rot: [Math.PI/2,0,0]
+    });
+    loadAndAttachSTL(window.robot, 'link1', baseUrl + 'URDF/meshes/Link1_modified.stl', {
+      color: 0x888888,
+      pos: [0,0,0],
+      rot: [0,0,0]
+    });
+    loadAndAttachSTL(window.robot, 'link2', baseUrl + 'URDF/meshes/Link2_modified.stl', {
+      color: 0xff9900,
+      pos: [0,0,0],
+      rot: [0,0,0]
+    });
+    loadAndAttachSTL(window.robot, 'link3', baseUrl + 'URDF/meshes/Link3_modified.stl', {
+      color: 0xff9900,
+      pos: [-0.15,0,0],
+      rot: [0,0,0]
+    });
+    loadAndAttachSTL(window.robot, 'link4', baseUrl + 'URDF/meshes/Link4_modified.stl', {
+      color: 0xff9900,
+      pos: [0,0,0],
+      rot: [0,0,0],
+      onMeshLoaded: mesh => {
+        fixedRotationObject = {
+          mesh,
+          targetWorldEuler: new Euler(0,0,0,'XYZ'),
+          initialRotation: mesh.rotation.clone()
+        };
+      }
+    });
+    loadAndAttachSTL(window.robot, 'link2_mimic', baseUrl + 'URDF/meshes/0001-01 L130_modified.stl', {
+      color: 0xff9900,
+      pos: [0,0.0135,0],
+      rot: [Math.PI/2,0,Math.PI/2],
+      onMeshLoaded: mesh => {
+        mimic_link1 = {
+          mesh,
+          targetWorldEuler: new Euler(0,0,0,'XYZ'),
+          initialRotation: mesh.rotation.clone()
+        };
+      }
+    });
+    loadAndAttachSTL(window.robot, 'link2', baseUrl + 'URDF/meshes/0400_modified.stl', {
+      color: 0xffdddd,
+      pos: [0,0,-0.007],
+      rot: [0,Math.PI,0],
+      onMeshLoaded: mesh => {
+        mimic_link4 = {
+          mesh,
+          targetWorldEuler: new Euler(0,0,0,'XYZ'),
+          initialRotation: mesh.rotation.clone()
+        };
+      }
+    });
+    loadAndAttachSTL(window.robot, 'link1', baseUrl + 'URDF/meshes/0001-01_modified.stl', {
+      color: 0xffdddd,
+      pos: [0.018,0.094,0.032],
+      rot: [0,0,Math.PI/2],
+      onMeshLoaded: mesh => {
+        mimic_link0001 = {
+          mesh,
+          targetWorldEuler: new Euler(0,0,0,'XYZ'),
+          initialRotation: mesh.rotation.clone()
+        };
+      }
+    });
+    loadAndAttachSTL(window.robot, 'link2', baseUrl + 'URDF/meshes/0500-01_modified.stl', {
+      color: 0xffdddd,
+      pos: [0,0.13,0.015],
+      rot: [0,0,0],
+      onMeshLoaded: mesh => {
+        mimic_link5 = {
+          mesh,
+          targetWorldEuler: new Euler(0,0,0,'XYZ'),
+          initialRotation: mesh.rotation.clone()
+        };
+      }
+    });
+    loadAndAttachSTL(window.robot, 'link2', baseUrl + 'URDF/meshes/0001-01 L150_modified.stl', {
+      color: 0xffdddd,
+      pos: [ - Math.sin(40) * 0.032,-0.01, 0.13+ Math.cos(40) * 0.032],
+      rot: [0, 0, 0],
+      onMeshLoaded: mesh => {
+        mimic_link150 = {
+          mesh,
+          targetWorldEuler: new Euler(0,0,0,'XYZ'),
+          initialRotation: mesh.rotation.clone()
+        };
+      }
+    });
+    // Keyboard controls
     keyboardUpdate = setupKeyboardControls(window.robot);
   };
 }

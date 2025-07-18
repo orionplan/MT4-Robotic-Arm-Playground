@@ -1,12 +1,14 @@
 # MT4 Robotic Arm Playground
 
 A web-based playground for the MT4 robotic arm—drive joints in real time from your browser.  
-Inspired by [Bambot](https://github.com/timqian/bambot) / [bambot.org](https://bambot.org), this repo shows how to:
+[![Try it Now](https://img.shields.io/badge/Try%20it%20Now-%E2%9A%99-blue?style=for-the-badge&logo=web)](https://orionplan.github.io/MT4-Robotic-Arm-Playground/)
 
-- Load a URDF model of the MT4 arm  
-- Render it in Three.js with OrbitControls  
-- Map keyboard keys `1/Q`, `2/W`, `3/E` to three joint axes  
-- Stream commands over WebSockets (or HTTP) to your hardware bridge  
+- Inspired by [Bambot](https://github.com/timqian/bambot) / [bambot.org](https://bambot.org), this repo shows how to:
+  - Load a URDF model of the MT4 arm  
+  - Render it in Three.js with OrbitControls  
+  - Map keyboard keys `1/Q`, `2/W`, `3/E` to three joint axes  
+  - Stream commands over WebSockets (or HTTP) to your hardware bridge
+
 
 ### ⚙️ Features
 
