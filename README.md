@@ -18,15 +18,15 @@ Inspired by [Bambot](https://github.com/timqian/bambot) / [bambot.org](https://b
 
 1. Clone the dev branch:  
    ```bash
-   git clone -b dev git@github.com:<you>/MT4-Robotic-Arm-Playground.git
+   git clone -b dev https://github.com/orionplan/MT4-Robotic-Arm-Playground.git
    cd MT4-Robotic-Arm-Playground
-
+    ```
 	2.	Install & serve:
     ```bash
     npm install
     npm run dev
     ```
-3.	Open http://localhost:3000 in your browser and press 1/Q, 2/W, 3/E to move joints.
+3.	Open http://localhost:xxxx in your browser and press 1/Q, 2/W, 3/E to move joints.
 
     🛠️ How It Works
     - Three.js renders the URDF model.
